@@ -1,4 +1,5 @@
 {
+  "proxy":"app-28868.nuvem-us-02.absamcloud.com",
   "name": "backend-diagnosis",
   "version": "1.0.0",
   "description": "",
