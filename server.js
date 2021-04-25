@@ -30,7 +30,7 @@ const multerConfig = require("./config/multer");
 
 //Instanciamento de Array e PythonShell
 let scores = new Array();
-let pyshell = new PythonShell('script.py');
+let pyshell = new PythonShell('script_novo.py');
 
 //Promessa para rodar o model.json com tensorflow
 async function Processo (imagem) {
@@ -87,6 +87,7 @@ async function Processo (imagem) {
         
 
         //Enviando as predictions para o script.py
+        console.log("ENVIO_PYTHON: ", JSON.stringify(predictions))
         pyshell.send(JSON.stringify(predictions));
         //Verificações se chegou e se sim print na tela 'finished'
         pyshell.on('message', function (message) {

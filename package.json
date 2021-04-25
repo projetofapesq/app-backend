@@ -1,5 +1,5 @@
 {
-  "proxy":"app-28868.nuvem-us-02.absamcloud.com",
+  "proxy": "app-28868.nuvem-us-02.absamcloud.com",
   "name": "backend-diagnosis",
   "version": "1.0.0",
   "description": "",
@@ -21,6 +21,6 @@
     "express": "^4.17.1",
     "multer": "^1.4.2",
     "node-pre-gyp": "^0.17.0",
-    "python-shell": "^3.0.0"
+    "python-shell": "1.0.8"
   }
 }
