@@ -5,6 +5,7 @@ import tensorflow
 from tensorflow.keras.preprocessing import image
 import tensorflow.keras.backend as K
 from tensorflow.keras.applications.inception_v3 import preprocess_input
+from pymongo import MongoClient
 
 #os.system('python -m pip install {}'.format("tensorflow"))
 
@@ -80,19 +81,17 @@ model = tensorflow.keras.models.load_model("./model_v3.h5")
 lines = sys.stdin.readlines()
 x = json.loads(lines[0])
 img = x[1]
-print(img)
-
-
+idteste = x[3]
+predictions = x[2]
+image_mongo1 = x[4]
+image_mongo2 = x[5]
 #heatmap
 img_processed = load_img_heat(img)
 heatmap = heatmap_generation(model,img_processed)
 img_heatmap = add_colored_heatmap(heatmap,img)
 
 #heatmap image
-cv2.imwrite('./resultados-Unet/heatmap.png', img_heatmap)
-
-
-
+cv2.imwrite('./resultados-Unet/heatmap-'+idteste+'.png', img_heatmap)
 
 #reshape data
 x_mask = np.array(x[0], dtype = np.float32)
@@ -105,5 +104,19 @@ img_o = cv2.resize(img_o, (512,512))
 result = add_colored_mask(img_o,mask )
 
 #segmented image
-cv2.imwrite('./resultados-Unet/radiografia.jpeg',img_o)
-cv2.imwrite('./resultados-Unet/segmentation.jpeg', result)  
+cv2.imwrite('./resultados-Unet/radiografia-'+idteste+'.jpeg',img_o)
+cv2.imwrite('./resultados-Unet/segmentation-'+idteste+'.jpeg', result)
+
+#MONGODB
+client = MongoClient("mongodb://localhost:27017")
+db = client["diagnosis"]
+collection = db["testes"]
+
+caminho_radiografia = 'C:/Users/Admin/Desktop/Julio/diagnosis-final/resultados-Unet/radiografia-'+idteste+'.jpeg'
+caminho_segmentation = 'C:/Users/Admin/Desktop/Julio/diagnosis-final/resultados-Unet/segmentation-'+idteste+'.jpeg'
+caminho_heatmap = 'C:/Users/Admin/Desktop/Julio/diagnosis-final/resultados-Unet/heatmap-'+idteste+'.jpeg'
+
+
+query_nova = { "id" : idteste, "predictions": predictions, "idimage":image_mongo1,"nomeimage":image_mongo2, "caminhoRadiografia": caminho_radiografia, "caminhoSegmentation": caminho_segmentation, "caminhoHeatmap":caminho_heatmap}
+
+collection.insert_one( query_nova )

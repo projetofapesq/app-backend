@@ -4,9 +4,11 @@ const tfn = require("@tensorflow/tfjs-node");//tfjs especifica ao node
 const {PythonShell} = require('python-shell');//para ligar o python ao nodejs
 const handler_Unet = tfn.io.fileSystem("./unet/model.json");//carregando o modelo Unet
 const handler_V3 = tfn.io.fileSystem("./model_v3.json/model.json");//carregando o modelo Xception
+const Teste = require('./database/model')//Carregando o model do BD
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
+const fss = require('fs');
 const fs = require('fs').promises //Responsavel de pegar a imagem na pasta local
 
 
@@ -29,12 +31,11 @@ const multer = require('multer');
 const multerConfig = require("./config/multer");
 
 //Instanciamento de Array e PythonShell
-let scores = new Array();
-let pyshell = new PythonShell('script_novo.py');
+let pyshell = new PythonShell('script_novo.py'), flag = "EMPTY";
 
 //Promessa para rodar o model.json com tensorflow
-async function Processo (imagem) {
-    console.log("IMAGEMM------> ", imagem);
+async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
+    
     Promise.all([fs.readFile(imagem)]).then( async (results)=>{
         console.log('processo iniciado....');
         
@@ -63,11 +64,14 @@ async function Processo (imagem) {
 
         prediction_V3 = await model_V3.predict(imgNormalizada).dataSync();
         prediction_v3 = Array.from(prediction_V3)
-        
+
         const object_result = new Array()
         object_result.push(prediction_Unet)
         object_result.push(imagem)
-        object_result.push(prediction_V3)
+        object_result.push(JSON.stringify(prediction_V3))
+        object_result.push(idteste)
+        object_result.push(image_mongo1)
+        object_result.push(image_mongo2)
         console.log("object_result: ", object_result.length)
 
         return object_result;
@@ -76,18 +80,13 @@ async function Processo (imagem) {
         //Then significa que todas as funções deram certo 
         console.log('processo terminado....')
         console.log('Predictions Unet: ',predictions[0]);
+        console.log('Imagem: ', predictions[1]);
         console.log('Predictions Xception: ',predictions[2]);
-        
-        //Passando predictions para o arrays scores pois assim tenho acesso fora da função
-        if(scores.length>0){
-            scores[0] = predictions[2]; 
-        }else{
-            scores.push(predictions[2]);
-        }
-        
+        console.log('Id do processo: ',predictions[3]);
+        console.log('Nome da imagem: ',predictions[4]);
 
         //Enviando as predictions para o script.py
-        console.log("ENVIO_PYTHON: ", JSON.stringify(predictions))
+        const path_imagem = predictions[1]
         pyshell.send(JSON.stringify(predictions));
         //Verificações se chegou e se sim print na tela 'finished'
         pyshell.on('message', function (message) {
@@ -98,7 +97,19 @@ async function Processo (imagem) {
             if (err){
                 throw err;
             };
+            if(fss.existsSync(path_imagem)){
+                fss.unlink(path_imagem, (err)=>{
+                    if(err){
+                        console.log("Error while delete file "+err);
+                    }
+                    console.log("arquivo de imagem teste excluido com sucesso.")
+                })
+            }else{
+                console.log('arquivo de imagem teste nao existe.')
+            }
+            
             console.log('finished');
+            flag = "STOP"; //Bandeira para sinalizar que finalizou...
             pyshell = new PythonShell('script_novo.py');
         });
         
@@ -108,27 +119,46 @@ async function Processo (imagem) {
         console.log(err)
     })
 }
+
 //Rotas
-app.get('/', (req, res)=>{
-    res.send(scores[0])//res => resposta ; scores => vetor com as predições
+app.get('/bandeira', (req, res) =>{
+    res.send(flag)
 })
-app.get('/imgradiografia', (req, res)=>{
-    res.sendFile(__dirname + '/resultados-Unet/radiografia.jpeg')//res => resposta
+app.get('/predictions/:id', async (req, res)=>{
+    const array = await Teste.find({ id: req.params.id});
+    res.send(JSON.parse(array[0].predictions))
 })
-app.get('/imgsegmentacao', (req, res)=>{
-    res.sendFile(__dirname + '/resultados-Unet/segmentation.jpeg')//res => resposta
+app.get('/imgradiografia/:id', (req, res)=>{
+    const idImage = req.params.id
+    res.sendFile(__dirname + '/resultados-Unet/radiografia-'+ idImage +'.jpeg')//res => resposta
 })
-app.get('/imgheatmap', (req, res)=>{
-    res.sendFile(__dirname + '/resultados-Unet/heatmap.png')//res => resposta
+app.get('/imgsegmentacao/:id', (req, res)=>{
+    const idImage = req.params.id;
+    res.sendFile(__dirname + '/resultados-Unet/segmentation-'+ idImage +'.jpeg')//res => resposta
+})
+app.get('/imgheatmap/:id', (req, res)=>{
+    const idImage = req.params.id;
+    res.sendFile(__dirname + '/resultados-Unet/heatmap-'+ idImage +'.png')//res => resposta
 })
 
-app.post('/image', multer(multerConfig).single('file'), (req, res)=>{
-    console.log('chegou...')//print chegou verificar que entrou na função
-    console.log(req.file)//print do que chegou no corpo da mensagem 
-    const image = req.file.path//repassando o valor para uma variavel. Local: Path; Aws: Location
+app.post('/image', multer(multerConfig).single('file'), async (req, res)=>{
+    console.log('chegou...'); //print chegou verificar que entrou na função
+    flag = "START"; //Bandeira iniciar
+    console.log(req.file); //print do que chegou no corpo da mensagem 
+    const image = req.file.path;//repassando o valor para uma variavel. Local: Path; Aws: Location
+    const array = image.split("\\")
+    const array2 = array[8].split("-")
+    const image_mongo1 = array2[0]
+    const image_mongo2 = array2[1]
+    try{
+        const teste = await Teste.create({ "imagem":image_mongo1 })      
+        Processo(image,teste.id,image_mongo1,image_mongo2)//Chamando a função de processo
+        return res.send(teste)
+    }catch(err){
+        return res.status(400).send({error:"Failha no registro"});
+    }
     
-    Processo(image)//Chamando a função de processo
-    res.send('imagem chegou.')
+    
 })
 //Habilitando o servidor na porta 5000
 app.listen(process.env.PORT || 5000, () => {
