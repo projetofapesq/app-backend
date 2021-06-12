@@ -146,8 +146,10 @@ app.post('/image', multer(multerConfig).single('file'), async (req, res)=>{
     flag = "START"; //Bandeira iniciar
     console.log(req.file); //print do que chegou no corpo da mensagem 
     const image = req.file.path;//repassando o valor para uma variavel. Local: Path; Aws: Location
-    const array = image.split("\\")
-    const array2 = array[8].split("-")
+    const array = image.split("/")
+    console.log("ARRAY -->", array)
+    const array2 = array[5].split("-")
+    console.log("ARRAY 2 --> ", array2)
     const image_mongo1 = array2[0]
     const image_mongo2 = array2[1]
     try{
