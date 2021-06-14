@@ -124,10 +124,6 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
 app.get('/bandeira', (req, res) =>{
     res.send(flag)
 })
-app.get('/full', async (req, res)=>{
-    const full = await Teste.find({});
-    res.send(full)
-})
 app.get('/predictions/:id', async (req, res)=>{
     const array = await Teste.find({ id: req.params.id});
     res.send(JSON.parse(array[0].predictions))
@@ -151,9 +147,9 @@ app.post('/image', multer(multerConfig).single('file'), async (req, res)=>{
     console.log(req.file); //print do que chegou no corpo da mensagem 
     const image = req.file.path;//repassando o valor para uma variavel. Local: Path; Aws: Location
     const array = image.split("/")
-    console.log("ARRAY -->", array)
-    const array2 = array[5].split("-")
-    console.log("ARRAY 2 --> ", array2)
+    console.log("Array : ", array)
+    const array2 = array[4].split("-"
+)
     const image_mongo1 = array2[0]
     const image_mongo2 = array2[1]
     try{
