@@ -124,6 +124,10 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
 app.get('/bandeira', (req, res) =>{
     res.send(flag)
 })
+app.get('/full', (req, res)=>{
+    const full = await Teste.find({});
+    res.send(full)
+})
 app.get('/predictions/:id', async (req, res)=>{
     const array = await Teste.find({ id: req.params.id});
     res.send(JSON.parse(array[0].predictions))
