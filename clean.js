@@ -48,7 +48,10 @@ const buscar_all_testes = async ()=>{
     console.log('Banco e Pasta de Resultados limpo.')
 }
 
-var Job = new cron('0 1/6 * * * *', function(){
+
+buscar_all_testes()
+
+var Job = new cron('0 */1 * * * *', function(){
     buscar_all_testes()
 })
 

@@ -125,7 +125,7 @@ app.get('/bandeira', (req, res) =>{
     res.send(flag)
 })
 app.get('/full', async (req, res)=>{
-    const full = await Teste.find({});
+    const full = await Teste.find();
     res.send(full)
 })
 app.get('/predictions/:id', async (req, res)=>{
