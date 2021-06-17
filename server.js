@@ -7,7 +7,6 @@ const handler_V3 = tfn.io.fileSystem("./model_v3.json/model.json");//carregando 
 const Teste = require('./database/model')//Carregando o model do BD
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const cron = require('cron').CronJob;
 const path = require('path');
 const fss = require('fs');
 const fs = require('fs').promises //Responsavel de pegar a imagem na pasta local
@@ -32,7 +31,7 @@ const multer = require('multer');
 const multerConfig = require("./config/multer");
 
 //Instanciamento de Array e PythonShell
-let pyshell = new PythonShell('script_novo.py'), flag = "EMPTY", pilha = 0;
+let pyshell = new PythonShell('script_novo.py'), flag = "EMPTY";
 
 
 //Promessa para rodar o model.json com tensorflow
@@ -148,13 +147,6 @@ app.get('/imgheatmap/:id', (req, res)=>{
 })
 
 
-var Clean_Pilha = new cron('0 * * * * *', function(){
-    console.log('---------> Limpando a Pilha <---------------');
-    pilha = 0;
-})
-
-Clean_Pilha.start()
-
 app.post('/image', multer(multerConfig).single('file'), async (req, res)=>{
     console.log('chegou...'); //print chegou verificar que entrou na função
     flag = "START"; //Bandeira iniciar
@@ -167,37 +159,12 @@ app.post('/image', multer(multerConfig).single('file'), async (req, res)=>{
     const image_mongo1 = array2[0]
     const image_mongo2 = array2[1]
     try{
-        if(pilha === 0 ){
-            const teste = await Teste.create({ "imagem":image_mongo1 })      
-            Processo(image,teste.id,image_mongo1,image_mongo2)//Chamando a função de processo
-            pilha += 1;
-            return res.send(teste)
-        }else if(pilha === 1){
-            console.log('------>    Pilha 2 elementos, 20 segundos para o 2 processo   <------')
-            const teste = await Teste.create({"imagem":image_mongo1})
-            setTimeout(Processo(image,teste.id,image_mongo1,image_mongo2),20000)
-            pilha += 1
-            return res.send(teste)
-        }else if(pilha === 2){
-            console.log('------>    Pilha 3 elementos, 30 segundos para o 3 processo   <------')
-            const teste = await Teste.create({"imagem":image_mongo1})
-            setTimeout(Processo(image,teste.id,image_mongo1,image_mongo2),30000)
-            pilha += 1
-            return res.send(teste)
-        }else if(pilha === 3){
-            console.log('------>    Pilha 2 elementos, 40 segundos para o 4 processo   <------')
-            const teste = await Teste.create({"imagem":image_mongo1})
-            setTimeout(Processo(image,teste.id,image_mongo1,image_mongo2),40000)
-            pilha += 1
-            return res.send(teste)
-        }else{
-            return res.send('PEN')
-        }
+        const teste = await Teste.create({ "imagem":image_mongo1 })      
+        Processo(image,teste.id,image_mongo1,image_mongo2)//Chamando a função de processo
+        return res.send(teste)
     }catch(err){
         return res.status(400).send({error:"Failha no registro"});
-    }
-    
-    
+    }    
 })
 
 //Habilitando o servidor na porta 5000
