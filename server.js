@@ -162,7 +162,7 @@ app.post('/image', multer(multerConfig).single('file'), async (req, res)=>{
     const image = req.file.path;//repassando o valor para uma variavel. Local: Path; Aws: Location
     const array = image.split("/")
     console.log("ARRAY -->", array)
-    const array2 = array[8].split("-")//5
+    const array2 = array[5].split("-")//5
     console.log("ARRAY 2 --> ", array2)
     const image_mongo1 = array2[0]
     const image_mongo2 = array2[1]
