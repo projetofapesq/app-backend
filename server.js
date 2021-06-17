@@ -162,7 +162,8 @@ app.post('/image', multer(multerConfig).single('file'), async (req, res)=>{
         const teste = await Teste.create({ "imagem":image_mongo1 })      
         Processo(image,teste.id,image_mongo1,image_mongo2)//Chamando a função de processo
         return res.send(teste)
-    }catch(err){
+    }catch(err){0
+        
         return res.status(400).send({error:"Failha no registro"});
     }    
 })
