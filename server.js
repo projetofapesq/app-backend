@@ -114,8 +114,7 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
             predictions = new Array()
             pyshell = new PythonShell('script_novo.py');
         });
-        
-
+        predictions = new Array()
     }).catch((err)=>{
         //Catch significa que alguma função não corresponderam de maneira correta
         console.log(err)
