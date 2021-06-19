@@ -111,6 +111,7 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
             
             console.log('finished');
             flag = "STOP"; //Bandeira para sinalizar que finalizou...
+            predictions = new Array()
             pyshell = new PythonShell('script_novo.py');
         });
         
