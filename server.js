@@ -131,7 +131,12 @@ app.get('/full', async (req, res)=>{
 })
 app.get('/predictions/:id', async (req, res)=>{
     const array = await Teste.find({ id: req.params.id});
-    res.send(JSON.parse(array[0].predictions))
+    if(array[0].predictions){
+        res.send(JSON.parse(array[0].predictions))
+    }else{
+        res.send('ERROR');
+    }
+    
 })
 app.get('/imgradiografia/:id', (req, res)=>{
     const idImage = req.params.id

@@ -51,7 +51,7 @@ const buscar_all_testes = async ()=>{
 
 //buscar_all_testes()
 
-var Job = new cron('0 */1 * * * *', function(){
+var Job = new cron('*/1 * * * * *', function(){
     buscar_all_testes()
 })
 
