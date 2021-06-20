@@ -128,8 +128,8 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
 async function Clean (lista_teste){
     lista_teste.forEach(async (el) =>{
         // DELETAR ARQUIVOS EM RESULTADOS-UNET : RADIOGRAFIA
-        if(fs.existsSync('./resultados-Unet/radiografia-'+el.id+'.jpeg')){
-            fs.unlink('./resultados-Unet/radiografia-'+el.id+'.jpeg', (err)=>{
+        if(fss.existsSync('./resultados-Unet/radiografia-'+el.id+'.jpeg')){
+            fss.unlink('./resultados-Unet/radiografia-'+el.id+'.jpeg', (err)=>{
                 if(err){
                     console.log("Error while delete file "+err);
                 }
@@ -139,8 +139,8 @@ async function Clean (lista_teste){
             console.log('arquivo radiografia nao existe.')
         }
         // DELETAR ARQUIVOS EM RESULTADOS-UNET : SEGMENTATION
-        if(fs.existsSync('./resultados-Unet/segmentation-'+el.id+'.jpeg')){
-            fs.unlink('./resultados-Unet/segmentation-'+el.id+'.jpeg', (err)=>{
+        if(fss.existsSync('./resultados-Unet/segmentation-'+el.id+'.jpeg')){
+            fss.unlink('./resultados-Unet/segmentation-'+el.id+'.jpeg', (err)=>{
                 if(err){
                     console.log("Error while delete file "+err);
                 }
@@ -150,8 +150,8 @@ async function Clean (lista_teste){
             console.log('arquivo de segmentation nao existe.')
         }
         // DELETAR ARQUIVOS EM RESULTADOS-UNET : HEATMAP
-        if(fs.existsSync('./resultados-Unet/heatmap-'+el.id+'.png')){
-            fs.unlink('./resultados-Unet/heatmap-'+el.id+'.png', (err)=>{
+        if(fss.existsSync('./resultados-Unet/heatmap-'+el.id+'.png')){
+            fss.unlink('./resultados-Unet/heatmap-'+el.id+'.png', (err)=>{
                 if(err){
                     console.log("Error while delete file "+err);
                 }
