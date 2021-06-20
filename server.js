@@ -31,12 +31,15 @@ const multer = require('multer');
 const multerConfig = require("./config/multer");
 
 //Instanciamento de Array e PythonShell
-let pyshell = new PythonShell('script_novo.py'), flag = "EMPTY", limpar_arquivos = new Array();
+let pyshell = new PythonShell('script_novo.py'), flag = "EMPTY", ;
 
 
 //Promessa para rodar o model.json com tensorflow
 async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
-    
+    //Capturar os testes já feito para limpar
+    const array_testes = await Teste.find();
+
+
     Promise.all([fs.readFile(imagem)]).then( async (results)=>{
         console.log('processo iniciado....');
         
@@ -111,7 +114,7 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
             
             console.log('finished');
             flag = "STOP"; //Bandeira para sinalizar que finalizou...
-            if(limpar_arquivos.length >3 ){
+            if(array_testes.length >3 ){
                 console.log('   ------>    hora de limpar o BD   <------    ')
                 Clean(limpar_arquivos);
             }    
@@ -176,7 +179,6 @@ app.get('/bandeira', (req, res) =>{
 })
 app.get('/full', async (req, res)=>{
     const full = await Teste.find();
-    limpar_arquivos = full
     res.send(full)
 })
 app.get('/predictions/:id', async (req, res)=>{
