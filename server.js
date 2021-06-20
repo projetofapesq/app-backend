@@ -115,7 +115,7 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
             pyshell = new PythonShell('script_novo.py');
         });
         
-        if(limpar_arquivos.length >5 && flag === "STOP"){
+        if(limpar_arquivos.length >3 && flag === "STOP"){
             Clean(limpar_arquivos);
         }
     }).catch((err)=>{
