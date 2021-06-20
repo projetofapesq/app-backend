@@ -121,12 +121,61 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
     })
 }
 
+async function Clean (){
+    const lista_teste = await Teste.find({})
+    lista_teste.forEach(async (el) =>{
+        // DELETAR ARQUIVOS EM RESULTADOS-UNET : RADIOGRAFIA
+        if(fs.existsSync('./resultados-Unet/radiografia-'+el.id+'.jpeg')){
+            fs.unlink('./resultados-Unet/radiografia-'+el.id+'.jpeg', (err)=>{
+                if(err){
+                    console.log("Error while delete file "+err);
+                }
+                console.log("arquivo de radiografia-"+el.id+"excluido com sucesso.")
+            })
+        }else{
+            console.log('arquivo radiografia nao existe.')
+        }
+        // DELETAR ARQUIVOS EM RESULTADOS-UNET : SEGMENTATION
+        if(fs.existsSync('./resultados-Unet/segmentation-'+el.id+'.jpeg')){
+            fs.unlink('./resultados-Unet/segmentation-'+el.id+'.jpeg', (err)=>{
+                if(err){
+                    console.log("Error while delete file "+err);
+                }
+            })
+            console.log("arquivo de segmentation-"+el.id+"excluido com sucesso.")
+        }else{
+            console.log('arquivo de segmentation nao existe.')
+        }
+        // DELETAR ARQUIVOS EM RESULTADOS-UNET : HEATMAP
+        if(fs.existsSync('./resultados-Unet/heatmap-'+el.id+'.png')){
+            fs.unlink('./resultados-Unet/heatmap-'+el.id+'.png', (err)=>{
+                if(err){
+                    console.log("Error while delete file "+err);
+                }
+            })
+            console.log("arquivo de radiografia-"+el.id+"excluido com sucesso.")
+        }else{
+            console.log('arquivo de heatmap nao existe.')
+        }
+        
+        // REMOVER DO MONGO
+        await Teste.remove({id:el.id})
+        await Teste.remove({_id:el._id})
+
+        
+    })
+    console.log('Banco e Pasta de Resultados limpo.')
+}
+
 //Rotas
 app.get('/bandeira', (req, res) =>{
     res.send(flag)
 })
 app.get('/full', async (req, res)=>{
     const full = await Teste.find();
+    if (full.length >= 5 && flag==='STOP'){
+        Clean();
+    }
     res.send(full)
 })
 app.get('/predictions/:id', async (req, res)=>{
