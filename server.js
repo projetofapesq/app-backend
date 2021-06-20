@@ -31,7 +31,7 @@ const multer = require('multer');
 const multerConfig = require("./config/multer");
 
 //Instanciamento de Array e PythonShell
-let pyshell = new PythonShell('script_novo.py'), flag = "EMPTY";
+let pyshell = new PythonShell('script_novo.py'), flag = "EMPTY", limpar_arquivos = new Array();
 
 
 //Promessa para rodar o model.json com tensorflow
@@ -111,18 +111,20 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
             
             console.log('finished');
             flag = "STOP"; //Bandeira para sinalizar que finalizou...
-            predictions = new Array()
+            
             pyshell = new PythonShell('script_novo.py');
         });
-        predictions = new Array()
+        
+        if(limpar_arquivos.length >5 && flag === "STOP"){
+            Clean(limpar_arquivos);
+        }
     }).catch((err)=>{
         //Catch significa que alguma função não corresponderam de maneira correta
         console.log(err)
     })
 }
 
-async function Clean (){
-    const lista_teste = await Teste.find({})
+async function Clean (lista_teste){
     lista_teste.forEach(async (el) =>{
         // DELETAR ARQUIVOS EM RESULTADOS-UNET : RADIOGRAFIA
         if(fs.existsSync('./resultados-Unet/radiografia-'+el.id+'.jpeg')){
@@ -173,9 +175,7 @@ app.get('/bandeira', (req, res) =>{
 })
 app.get('/full', async (req, res)=>{
     const full = await Teste.find();
-    if (full.length >= 5 && flag==='STOP'){
-        Clean();
-    }
+    limpar_arquivos = full
     res.send(full)
 })
 app.get('/predictions/:id', async (req, res)=>{
