@@ -49,9 +49,10 @@ const buscar_all_testes = async ()=>{
 }
 
 
-//buscar_all_testes()
+buscar_all_testes()
 
-var Job = new cron('0 */1 * * * *', function(){
+var Job = new cron('*/10 * * * * *', function(){
+    console.log("-------> Limpador Automatico <--------")
     buscar_all_testes()
 })
 
