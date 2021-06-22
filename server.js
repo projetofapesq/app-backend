@@ -31,7 +31,7 @@ const multer = require('multer');
 const multerConfig = require("./config/multer");
 
 //Instanciamento de Array e PythonShell
-let pyshell = new PythonShell('script_novo.py'), flag = "EMPTY", ;
+let pyshell = new PythonShell('script_novo.py'), flag = "EMPTY" ;
 
 
 //Promessa para rodar o model.json com tensorflow
@@ -116,7 +116,8 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
             flag = "STOP"; //Bandeira para sinalizar que finalizou...
             if(array_testes.length >3 ){
                 console.log('   ------>    hora de limpar o BD   <------    ')
-                Clean(limpar_arquivos);
+		array_testes.pop()
+                Clean(array_testes);
             }    
             pyshell = new PythonShell('script_novo.py');
         });
