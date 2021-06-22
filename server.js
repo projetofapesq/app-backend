@@ -96,7 +96,11 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
 
         //Enviando as predictions para o script.py
         const path_imagem = predictions[1]
-        pyshell.send(JSON.stringify(predictions));
+        try{
+		pyshell.send(JSON.stringify(predictions))
+	}catch(err){
+		console.log("deu erro no envio para o python. ", err)
+	}
         //Verificações se chegou e se sim print na tela 'finished'
         pyshell.on('message', function (message) {
             console.log(message);
