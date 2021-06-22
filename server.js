@@ -90,6 +90,10 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
         console.log('Id do processo: ',predictions[3]);
         console.log('Nome da imagem: ',predictions[4]);
 
+        //Processo de limpar
+        process.stdout.clearLine();
+        process.stdout.cursorTo(0);
+
         //Enviando as predictions para o script.py
         const path_imagem = predictions[1]
         pyshell.send(JSON.stringify(predictions));
@@ -119,6 +123,7 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
                 console.log('   ------>    hora de limpar o BD   <------    ')
                 array_testes.pop();
                 myCache.flushAll();
+                
                 Clean(array_testes);
             }    
             pyshell = new PythonShell('script_novo.py');
