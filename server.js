@@ -7,6 +7,7 @@ const handler_V3 = tfn.io.fileSystem("./model_v3.json/model.json");//carregando 
 const Teste = require('./database/model')//Carregando o model do BD
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const NodeCache = require('node-cache');
 const path = require('path');
 const fss = require('fs');
 const fs = require('fs').promises //Responsavel de pegar a imagem na pasta local
@@ -31,7 +32,7 @@ const multer = require('multer');
 const multerConfig = require("./config/multer");
 
 //Instanciamento de Array e PythonShell
-let pyshell = new PythonShell('script_novo.py'), flag = "EMPTY" ;
+let pyshell = new PythonShell('script_novo.py'), flag = "EMPTY" , myCache = new NodeCache();
 
 
 //Promessa para rodar o model.json com tensorflow
@@ -116,7 +117,8 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
             flag = "STOP"; //Bandeira para sinalizar que finalizou...
             if(array_testes.length >3 ){
                 console.log('   ------>    hora de limpar o BD   <------    ')
-		array_testes.pop()
+                array_testes.pop();
+                myCache.flushAll();
                 Clean(array_testes);
             }    
             pyshell = new PythonShell('script_novo.py');
