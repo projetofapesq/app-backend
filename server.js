@@ -39,6 +39,9 @@ let pyshell = new PythonShell('script_novo.py'), flag = "EMPTY" , myCache = new 
 async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
     //Capturar os testes já feito para limpar
     const array_testes = await Teste.find();
+    //Processo de limpar
+    process.stdout.clearLine();
+    process.stdout.cursorTo(0);
 
 
     Promise.all([fs.readFile(imagem)]).then( async (results)=>{
@@ -61,13 +64,10 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
         const imgNormalizada = imgResize_V3.sub(offset).div(offset);
 
         //Colocando a imagem para o modelo e guardando as prediction 
-        let prediction_Unet = new Array();
-        let prediction_V3 = new Array();
-        
-        prediction_Unet = await model_Unet.predict(imgResize_Unet).dataSync();
+        let prediction_Unet = await model_Unet.predict(imgResize_Unet).dataSync();
         prediction_Unet = Array.from(prediction_Unet)
 
-        prediction_V3 = await model_V3.predict(imgNormalizada).dataSync();
+        let prediction_V3 = await model_V3.predict(imgNormalizada).dataSync();
         prediction_v3 = Array.from(prediction_V3)
 
         const object_result = new Array()
