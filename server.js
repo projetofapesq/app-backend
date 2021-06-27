@@ -126,7 +126,7 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
             flag = "STOP"; //Bandeira para sinalizar que finalizou...
             const tempo_final = Date.now() - tempo_inicio
             console.log('Intervalo de tempo do processo -----> ', tempo_final)
-            if(array_testes.length >3 ){
+            if(array_testes.length > 10 ){
                 console.log('   ------>    hora de limpar o BD   <------    ')
                 array_testes.pop();
                 myCache.flushAll();

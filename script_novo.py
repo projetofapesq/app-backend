@@ -3,6 +3,7 @@ import numpy as np
 import cv2
 import tensorflow
 import gc 
+import subprocess
 from tensorflow.keras.preprocessing import image
 import tensorflow.keras.backend as K
 from tensorflow.keras.applications.inception_v3 import preprocess_input
@@ -119,25 +120,11 @@ caminho_heatmap = 'C:/Users/Admin/Desktop/Julio/diagnosis-final/resultados-Unet/
 
 query_nova = { "id" : idteste, "predictions": predictions, "idimage":image_mongo1,"nomeimage":image_mongo2, "caminhoRadiografia": caminho_radiografia, "caminhoSegmentation": caminho_segmentation, "caminhoHeatmap":caminho_heatmap}
 
-collection.insert_one( query_nova )
+collection.insert_one( query_nova );
 
 
 # Limpeza de memoria
 
-del model
-del lines
-del x
-del idteste
-del predictions 
-del image_mongo1 
-del image_mongo2
-del img_processed 
-del heatmap
-del img_heatmap 
-del x_mask 
-del x_mask_ajust 
-del mask 
-del img_o 
-del result
-gc.collect()
+limpeza = "echo 3 > /proc/sys/vm/drop_caches"
+output_limpeza = subprocess.check_output(['bash','-c',limpeza])
 
