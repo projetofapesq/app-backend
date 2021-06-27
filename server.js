@@ -39,7 +39,7 @@ let pyshell = new PythonShell('script_novo.py'), flag = "EMPTY" , myCache = new 
 async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
     //Capturar os testes já feito para limpar
     const array_testes = await Teste.find();
-    const tempo_inicio = Data.Now()
+    const tempo_inicio = Date.now()
     //Processo de limpar
     process.stdout.clearLine();
     process.stdout.cursorTo(0);
@@ -124,7 +124,7 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
             
             console.log('finished');
             flag = "STOP"; //Bandeira para sinalizar que finalizou...
-            const tempo_final = Data.Now() - tempo_inicio
+            const tempo_final = Date.now() - tempo_inicio
             console.log('Intervalo de tempo do processo -----> ', tempo_final)
             if(array_testes.length >3 ){
                 console.log('   ------>    hora de limpar o BD   <------    ')
