@@ -128,3 +128,5 @@ collection.insert_one( query_nova );
 limpeza = "echo 3 > /proc/sys/vm/drop_caches"
 output_limpeza = subprocess.check_output(['bash','-c',limpeza])
 
+memoria = "free -h"
+output = subprocess.check_output(['bash','-c',memoria])
