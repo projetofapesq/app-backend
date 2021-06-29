@@ -125,6 +125,6 @@ collection.insert_one( query_nova );
 
 # Limpeza de memoria
 
-limpeza = "echo 3 > /proc/sys/vm/drop_caches"
-output_limpeza = subprocess.check_output(['bash','-c',limpeza])
+comando = "sudo ./limpezaCacheSwap.sh"
+output = subprocess.check_output(['bash','-c',comando])
 
