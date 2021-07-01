@@ -7,11 +7,9 @@ const handler_V3 = tfn.io.fileSystem("./model_v3.json/model.json");//carregando 
 const Teste = require('./database/model')//Carregando o model do BD
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const NodeCache = require('node-cache');
 const path = require('path');
 const fss = require('fs');
 const fs = require('fs').promises //Responsavel de pegar a imagem na pasta local
-
 
 //Servidor: Instância e habilitações cors e bodyParser para comunicação externa
 const express = require('express');
@@ -32,7 +30,7 @@ const multer = require('multer');
 const multerConfig = require("./config/multer");
 
 //Instanciamento de Array e PythonShell
-let pyshell = new PythonShell('script_novo.py'), flag = "EMPTY" , myCache = new NodeCache();
+let pyshell = new PythonShell('script_processo.py'), flag = "EMPTY" ;
 
 
 //Promessa para rodar o model.json com tensorflow
@@ -44,9 +42,8 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
     process.stdout.clearLine();
     process.stdout.cursorTo(0);
 
-
     Promise.all([fs.readFile(imagem)]).then( async (results)=>{
-        console.log('processo iniciado....');
+        console.log('#######  PROCESSAMENTO DA IMAGEM INICIADO #######');
         
         //Carregando modelos 
         const model_Unet = await tf.loadLayersModel(handler_Unet);
@@ -55,8 +52,7 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
         //Passar a imagem para um tensor 3D
         const imgTensor_Unet =tfn.node.decodeImage(new Uint8Array(results[0]),1);
         const imgTensor_V3 =tfn.node.decodeImage(new Uint8Array(results[0]),3);
-        
-        
+    
         //Reajuste na imagem para tamanho 512x512 e expansão para 4D
         const imgResize_Unet = tf.image.resizeNearestNeighbor(imgTensor_Unet, [512,512],preserve_aspect_ratio=true).mean(2).toFloat().expandDims(0).expandDims(-1);
         
@@ -78,30 +74,21 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
         object_result.push(idteste)
         object_result.push(image_mongo1)
         object_result.push(image_mongo2)
-        console.log("object_result: ", object_result.length)
-
+        
         return object_result;
 
     }).then((predictions)=>{
         //Then significa que todas as funções deram certo 
-        console.log('processo terminado....')
-        console.log('Predictions Unet: ',predictions[0]);
-        console.log('Imagem: ', predictions[1]);
-        console.log('Predictions Xception: ',predictions[2]);
-        console.log('Id do processo: ',predictions[3]);
-        console.log('Nome da imagem: ',predictions[4]);
-
-        //Processo de limpar
-        process.stdout.clearLine();
-        process.stdout.cursorTo(0);
-
+        console.log('#######  PROCESSAMENTO DA IMAGEM TERMINADO #######')
+    
         //Enviando as predictions para o script.py
         const path_imagem = predictions[1]
         try{
-		pyshell.send(JSON.stringify(predictions))
-	}catch(err){
-		console.log("deu erro no envio para o python. ", err)
-	}
+            console.log('#######  DADOS ENVIADO PARA SCRIPT_PROCESSO.PY  #######')
+		    pyshell.send(JSON.stringify(predictions))
+        }catch(err){
+            console.log("#######  ERROR! AO ENVIO DOS DADOS PARA O SCRIPT_PROCESSO.PY #######", err)
+        }
         //Verificações se chegou e se sim print na tela 'finished'
         pyshell.on('message', function (message) {
             console.log(message);
@@ -122,18 +109,22 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
                 console.log('arquivo de imagem teste nao existe.')
             }
             
-            console.log('finished');
+            console.log('#######  FINISHED! PROCESSAMENTO DA IMAGEM REALIZADO COM SUCESSO! #######');
             flag = "STOP"; //Bandeira para sinalizar que finalizou...
             const tempo_final = Date.now() - tempo_inicio
-            console.log('Intervalo de tempo do processo -----> ', tempo_final)
-            if(array_testes.length > 10 ){
-                console.log('   ------>    hora de limpar o BD   <------    ')
+            console.log('#######  TEMPO DO PROCESSO: ', tempo_final, '  ####### ')
+            if(array_testes.length > 20 ){
+                console.log('  #######  LIMPEZADO DO BD! INICIADO!" #######')
                 array_testes.pop();
-                myCache.flushAll();
-                
                 Clean(array_testes);
+                PythonShell.run('script_clean.py',null,(err)=>{
+                    if (err) throw err;
+                    console.log('#######  LIMPEZADO DO BD! TERMINADO!  #######')
+                })
+                
+                
             }    
-            pyshell = new PythonShell('script_novo.py');
+            pyshell = new PythonShell('script_processo.py');
         });
         
         
@@ -143,7 +134,7 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
     })
 }
 
-async function Clean (lista_teste){
+async function Clean (lista_teste){  
     lista_teste.forEach(async (el) =>{
         // DELETAR ARQUIVOS EM RESULTADOS-UNET : RADIOGRAFIA
         if(fss.existsSync('./resultados-Unet/radiografia-'+el.id+'.jpeg')){
@@ -151,10 +142,10 @@ async function Clean (lista_teste){
                 if(err){
                     console.log("Error while delete file "+err);
                 }
-                console.log("arquivo de radiografia-"+el.id+"excluido com sucesso.")
+                console.log(el.id+"EXCLUIDO!")
             })
         }else{
-            console.log('arquivo radiografia nao existe.')
+            console.log('RADIOGRAFIA NAO EXISTE.')
         }
         // DELETAR ARQUIVOS EM RESULTADOS-UNET : SEGMENTATION
         if(fss.existsSync('./resultados-Unet/segmentation-'+el.id+'.jpeg')){
@@ -163,9 +154,9 @@ async function Clean (lista_teste){
                     console.log("Error while delete file "+err);
                 }
             })
-            console.log("arquivo de segmentation-"+el.id+"excluido com sucesso.")
+            console.log(el.id+"EXCLUIDO!")
         }else{
-            console.log('arquivo de segmentation nao existe.')
+            console.log('SEGMENTACION NAO EXISTE')
         }
         // DELETAR ARQUIVOS EM RESULTADOS-UNET : HEATMAP
         if(fss.existsSync('./resultados-Unet/heatmap-'+el.id+'.png')){
@@ -174,9 +165,9 @@ async function Clean (lista_teste){
                     console.log("Error while delete file "+err);
                 }
             })
-            console.log("arquivo de radiografia-"+el.id+"excluido com sucesso.")
+            console.log(el.id+"EXCLUIDO!")
         }else{
-            console.log('arquivo de heatmap nao existe.')
+            console.log('HEATMAP NAO EXISTE.')
         }
         
         // REMOVER DO MONGO
@@ -220,14 +211,11 @@ app.get('/imgheatmap/:id', (req, res)=>{
 
 
 app.post('/image', multer(multerConfig).single('file'), async (req, res)=>{
-    console.log('chegou...'); //print chegou verificar que entrou na função
+    console.log('chegou imagem...'); //print chegou verificar que entrou na função
     flag = "START"; //Bandeira iniciar
-    console.log(req.file); //print do que chegou no corpo da mensagem 
     const image = req.file.path;//repassando o valor para uma variavel. Local: Path; Aws: Location
     const array = image.split("/")
-    console.log("ARRAY -->", array)
     const array2 = array[5].split("-")//5
-    console.log("ARRAY 2 --> ", array2)
     const image_mongo1 = array2[0]
     const image_mongo2 = array2[1]
     try{
