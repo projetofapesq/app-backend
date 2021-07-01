@@ -123,6 +123,7 @@ query_nova = { "id" : idteste, "predictions": predictions, "idimage":image_mongo
 collection.insert_one( query_nova );
 
 
+<<<<<<< HEAD:script_novo.py
 # Limpeza de memoria
 
 comando = "echo ---- Limpeza Cache e Swap ----"
@@ -142,4 +143,6 @@ subprocess.Popen(comando7, shell=True)
 #comando8 = "free -h"
 #subprocess.Popen(comando8, shell=True)
 
+=======
+>>>>>>> a29e68fef7bf63113dedc7a87a375613ecf400fc:script_processo.py
 
