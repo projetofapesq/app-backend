@@ -123,26 +123,3 @@ query_nova = { "id" : idteste, "predictions": predictions, "idimage":image_mongo
 collection.insert_one( query_nova );
 
 
-<<<<<<< HEAD:script_novo.py
-# Limpeza de memoria
-
-comando = "echo ---- Limpeza Cache e Swap ----"
-subprocess.Popen(comando,shell=True)
-#comando2 = "free -h"
-#subprocess.Popen(comando2, shell=True)
-comando3 = "echo 3 > /proc/sys/vm/drop_caches"
-subprocess.Popen(comando3, shell=True)
-comando4 = "sysctl -w vm.drop_caches=3 "
-subprocess.Popen(comando4, shell=True)
-comando5 = "swapoff -a  && sudo swapon /swapfile"
-subprocess.Popen(comando5, shell=True)
-#comando6 = "clear"
-#subprocess.Popen(comando6, shell=True)
-comando7 = "echo Limpeza do Cache e Swap efetuada com sucesso"
-subprocess.Popen(comando7, shell=True)
-#comando8 = "free -h"
-#subprocess.Popen(comando8, shell=True)
-
-=======
->>>>>>> a29e68fef7bf63113dedc7a87a375613ecf400fc:script_processo.py
-
