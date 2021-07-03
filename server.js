@@ -103,16 +103,10 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
                     if(err){
                         console.log("Error while delete file "+err);
                     }
-                    console.log("arquivo de imagem teste excluido com sucesso.")
+                    
                 })
-            }else{
-                console.log('arquivo de imagem teste nao existe.')
             }
-            
-            console.log('#######  FINISHED! PROCESSAMENTO DA IMAGEM REALIZADO COM SUCESSO! #######');
-            flag = "STOP"; //Bandeira para sinalizar que finalizou...
-            const tempo_final = Date.now() - tempo_inicio
-            console.log('#######  TEMPO DO PROCESSO: ', tempo_final, '  ####### ')
+
             if(array_testes.length > 20 ){
                 console.log('  #######  LIMPEZADO DO BD! INICIADO!" #######')
                 array_testes.pop();
@@ -123,7 +117,12 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
                 })
                 
                 
-            }    
+            }
+
+            console.log('#######  FINISHED! PROCESSAMENTO DA IMAGEM REALIZADO COM SUCESSO! #######');
+            flag = "STOP"; //Bandeira para sinalizar que finalizou...
+            const tempo_final = Date.now() - tempo_inicio
+            console.log('#######  TEMPO DO PROCESSO: ', tempo_final, '  ####### ')
             pyshell = new PythonShell('script_processo.py');
         });
         
@@ -142,10 +141,8 @@ async function Clean (lista_teste){
                 if(err){
                     console.log("Error while delete file "+err);
                 }
-                console.log(el.id+"EXCLUIDO!")
+                
             })
-        }else{
-            console.log('RADIOGRAFIA NAO EXISTE.')
         }
         // DELETAR ARQUIVOS EM RESULTADOS-UNET : SEGMENTATION
         if(fss.existsSync('./resultados-Unet/segmentation-'+el.id+'.jpeg')){
@@ -154,9 +151,7 @@ async function Clean (lista_teste){
                     console.log("Error while delete file "+err);
                 }
             })
-            console.log(el.id+"EXCLUIDO!")
-        }else{
-            console.log('SEGMENTACION NAO EXISTE')
+         
         }
         // DELETAR ARQUIVOS EM RESULTADOS-UNET : HEATMAP
         if(fss.existsSync('./resultados-Unet/heatmap-'+el.id+'.png')){
@@ -165,18 +160,13 @@ async function Clean (lista_teste){
                     console.log("Error while delete file "+err);
                 }
             })
-            console.log(el.id+"EXCLUIDO!")
-        }else{
-            console.log('HEATMAP NAO EXISTE.')
+         
         }
-        
         // REMOVER DO MONGO
         await Teste.remove({id:el.id})
         await Teste.remove({_id:el._id})
-
-        
     })
-    console.log('Banco e Pasta de Resultados limpo.')
+    console.log('#######  LIMPEZADO DO BD E PASTAS SUCESSO! #######')
 }
 
 //Rotas
@@ -211,7 +201,6 @@ app.get('/imgheatmap/:id', (req, res)=>{
 
 
 app.post('/image', multer(multerConfig).single('file'), async (req, res)=>{
-    console.log('chegou imagem...'); //print chegou verificar que entrou na função
     flag = "START"; //Bandeira iniciar
     const image = req.file.path;//repassando o valor para uma variavel. Local: Path; Aws: Location
     const array = image.split("/")

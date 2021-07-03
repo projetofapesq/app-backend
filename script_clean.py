@@ -1,6 +1,8 @@
 import subprocess
 
 #Limpeza de memoria
+
+print("#######  LIMPEZADO DA CACHE E SWAP INICIADO! #######")
 comando = "echo ---- Limpeza Cache e Swap ----"
 subprocess.Popen(comando,shell=True)
 comando2 = "free -h"
@@ -16,3 +18,4 @@ subprocess.Popen(comando7, shell=True)
 comando8 = "free -h"
 subprocess.Popen(comando8, shell=True)
 
+print("#######  LIMPEZADO DA CACHE E SWAP INICIADO! #######")

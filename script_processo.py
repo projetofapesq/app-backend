@@ -61,7 +61,7 @@ def heatmap_generation(model,x):
 def add_colored_heatmap (heatmap,ORIGINAL):
 
   heatmap = np.maximum(heatmap, 0)
-  print(np.max(heatmap))
+  #print(np.max(heatmap))
   heatmap /= np.max(heatmap)
   heatmap = heatmap.reshape((3, 3))
 
