@@ -30,7 +30,7 @@ const multer = require('multer');
 const multerConfig = require("./config/multer");
 
 //Instanciamento de Array e PythonShell
-let pyshell = new PythonShell('script_processo.py'), flag = "EMPTY", pyclean = new PythonShell('script_clean.py');
+let pyshell = new PythonShell('script_processo.py'), flag = "EMPTY", pyclean;
 
 
 //Promessa para rodar o model.json com tensorflow
@@ -111,12 +111,18 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
                 console.log('#######  LIMPEZA DO BD! INICIADO!" #######')
                 array_testes.pop();
                 Clean(array_testes);
+                pyshell = new PythonShell('script_processo.py');
+                pyclean = new PythonShell('script_clean.py');
                 pyclean.send('hello');
                 pyclean.on('message', (message)=>{
                     console.log(message);
                 });
                 
-
+                pyclean.end((err)=>{
+                    if(err)throw err;
+                    console.log('#######  LIMPEZA DO BD! FINALIZADO!" #######')
+                    pyclean= new PythonShell('script_clean.py');
+                })
                 
             }
 
@@ -124,12 +130,8 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
             flag = "STOP"; //Bandeira para sinalizar que finalizou...
             const tempo_final = Date.now() - tempo_inicio
             console.log('#######  TEMPO DO PROCESSO: ', tempo_final, '  ####### ')
-            pyshell = new PythonShell('script_processo.py');
-            pyclean.end((err)=>{
-                if(err)throw err;
-                console.log('#######  LIMPEZA DO BD! FINALIZADO!" #######')
-                pyclean= new PythonShell('script_clean.py');
-            })
+            
+            
         });
         
         
