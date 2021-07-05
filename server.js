@@ -108,18 +108,14 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
             }
 
             if(array_testes.length > 20 ){
-                console.log('  #######  LIMPEZADO DO BD! INICIADO!" #######')
+                console.log('#######  LIMPEZA DO BD! INICIADO!" #######')
                 array_testes.pop();
                 Clean(array_testes);
                 pyclean.send('hello');
                 pyclean.on('message', (message)=>{
                     console.log(message);
                 });
-                pyclean.end((err)=>{
-                    if(err)throw err;
-                    console.log('#######  LIMPEZADO DO BD! FINALIZADO!" #######')
-                    pyclean= new PythonShell('script_clean.py');
-                })
+                
 
                 
             }
@@ -129,6 +125,11 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
             const tempo_final = Date.now() - tempo_inicio
             console.log('#######  TEMPO DO PROCESSO: ', tempo_final, '  ####### ')
             pyshell = new PythonShell('script_processo.py');
+            pyclean.end((err)=>{
+                if(err)throw err;
+                console.log('#######  LIMPEZA DO BD! FINALIZADO!" #######')
+                pyclean= new PythonShell('script_clean.py');
+            })
         });
         
         
@@ -171,7 +172,7 @@ async function Clean (lista_teste){
         await Teste.remove({id:el.id})
         await Teste.remove({_id:el._id})
     })
-    console.log('#######  LIMPEZADO DO BD E PASTAS SUCESSO! #######')
+    console.log('#######  LIMPEZA DO BD E PASTAS SUCESSO! #######')
 }
 
 //Rotas
