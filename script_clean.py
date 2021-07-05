@@ -11,6 +11,8 @@ comando4 = "sysctl -w vm.drop_caches=3 "
 subprocess.Popen(comando4, shell=True)
 comando5 = "swapoff -a"
 subprocess.Popen(comando5, shell=True)
+comando51 = "swapon -a"
+subprocess.Popen(comando51, shell=True)
 comando6 = "sudo swapon /swapfile"
 subprocess.Popen(comando6, shell=True)
 comando7 = "echo #######  LIMPEZADO DA CACHE E SWAP FINALIZADO! #######"
