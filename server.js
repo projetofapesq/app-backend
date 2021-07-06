@@ -107,7 +107,7 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
                 })
             }
 
-            if(array_testes.length > 10 ){
+            if(array_testes.length > 20 ){
                 console.log('#######  LIMPEZA DO BD! INICIADO!" #######')
                 array_testes.pop();
                 Clean(array_testes);
@@ -122,14 +122,12 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
                     if(err)throw err;
                     console.log('#######  LIMPEZA DO BD! FINALIZADO!" #######')
                     pyclean= new PythonShell('script_clean.py');
+                    console.log('#######  FINISHED! PROCESSAMENTO DA IMAGEM REALIZADO COM SUCESSO! #######');
+                    flag = "STOP"; //Bandeira para sinalizar que finalizou...
+                    const tempo_final = Date.now() - tempo_inicio
+                    pyshell = new PythonShell('script_processo.py');
+                    console.log('#######  TEMPO DO PROCESSO: ', tempo_final, '  ####### ')
                 })
-                
-                console.log('#######  FINISHED! PROCESSAMENTO DA IMAGEM REALIZADO COM SUCESSO! #######');
-                flag = "STOP"; //Bandeira para sinalizar que finalizou...
-                const tempo_final = Date.now() - tempo_inicio
-                pyshell = new PythonShell('script_processo.py');
-                console.log('#######  TEMPO DO PROCESSO: ', tempo_final, '  ####### ')
-            
             }else{
                 console.log('#######  FINISHED! PROCESSAMENTO DA IMAGEM REALIZADO COM SUCESSO! #######');
                 flag = "STOP"; //Bandeira para sinalizar que finalizou...
