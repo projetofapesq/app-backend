@@ -24,5 +24,5 @@ import os
 os.system('free -h')
 os.system('sync; echo 3 > /proc/sys/vm/drop_caches')
 os.system('sysctl -w vm.drop_caches=3')
-os.system('swapoff -a && swapon -a')
+os.system('swapoff -a && swapon /swapfile')
 os.system('free -h')
