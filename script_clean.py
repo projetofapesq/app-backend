@@ -20,11 +20,9 @@ import os
 #comando8 = "free -h"
 #subprocess.Popen(comando8, shell=True)
 
-os.system('echo #######  LIMPEZA DA CACHE E SWAP INICIADO! #######')
+
 os.system('free -h')
-os.system('echo 3 > /proc/sys/vm/drop_caches')
+os.system('sync; echo 3 > /proc/sys/vm/drop_caches')
 os.system('sysctl -w vm.drop_caches=3')
-os.system('sudo swapoff /swapfile')
-os.system('sudo swapon /swapfile')
-os.system('echo #######  LIMPEZA DA CACHE E SWAP FINALIZADO! #######')
+os.system('swapoff -a && swapon -a')
 os.system('free -h')
