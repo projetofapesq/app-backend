@@ -107,7 +107,7 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
                 })
             }
 
-            if(array_testes.length > 20 ){
+            if(array_testes.length > 3 ){
                 console.log('#######  LIMPEZA DO BD! INICIADO!" #######')
                 array_testes.pop();
                 Clean(array_testes);
