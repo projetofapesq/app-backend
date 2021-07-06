@@ -107,27 +107,20 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
                 })
             }
 
-            if(array_testes.length > 20 ){
+            if(array_testes.length > 5 ){
                 console.log('#######  LIMPEZA DO BD! INICIADO!" #######')
                 array_testes.pop();
                 Clean(array_testes);
-                pyshell = new PythonShell('script_processo.py');
-                pyclean = new PythonShell('script_clean.py');
-                pyclean.send('hello');
-                pyclean.on('message', (message)=>{
-                    console.log(message);
-                });
-                
-                pyclean.end((err)=>{
-                    if(err)throw err;
-                    console.log('#######  LIMPEZA DO BD! FINALIZADO!" #######')
-                    pyclean= new PythonShell('script_clean.py');
-                    console.log('#######  FINISHED! PROCESSAMENTO DA IMAGEM REALIZADO COM SUCESSO! #######');
-                    flag = "STOP"; //Bandeira para sinalizar que finalizou...
-                    const tempo_final = Date.now() - tempo_inicio
-                    pyshell = new PythonShell('script_processo.py');
-                    console.log('#######  TEMPO DO PROCESSO: ', tempo_final, '  ####### ')
-                })
+                shell.exec('free -h')
+                shell.exec('sync; echo 1 > /proc/sys/vm/drop_caches')
+                shell.exec('sync; sysctl -w vm.drop_caches=1')
+                shell.exec('sync; swapoff -a && swapon /swapfile')
+                shell.exec('free -h')
+                console.log('#######  LIMPEZA DO BD! FINALIZADO!" #######')
+                console.log('#######  FINISHED! PROCESSAMENTO DA IMAGEM REALIZADO COM SUCESSO! #######');
+                flag = "STOP"; //Bandeira para sinalizar que finalizou...
+                const tempo_final = Date.now() - tempo_inicio
+                console.log('#######  TEMPO DO PROCESSO: ', tempo_final, '  ####### ')
             }else{
                 console.log('#######  FINISHED! PROCESSAMENTO DA IMAGEM REALIZADO COM SUCESSO! #######');
                 flag = "STOP"; //Bandeira para sinalizar que finalizou...
