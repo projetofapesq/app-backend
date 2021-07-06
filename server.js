@@ -8,6 +8,7 @@ const Teste = require('./database/model')//Carregando o model do BD
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
+const shell = require('shelljs');
 const fss = require('fs');
 const fs = require('fs').promises //Responsavel de pegar a imagem na pasta local
 
