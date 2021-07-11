@@ -42,102 +42,106 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
     //Processo de limpar
     process.stdout.clearLine();
     process.stdout.cursorTo(0);
-
-    Promise.all([fs.readFile(imagem)]).then( async (results)=>{
-        console.log('#######  PROCESSAMENTO DA IMAGEM INICIADO #######');
+    if(flag=="START"){
+        console.log('#######  OUTRO PROCESSO EM ANDAMENTO #######');
+    }else{
+        Promise.all([fs.readFile(imagem)]).then( async (results)=>{
+            console.log('#######  PROCESSAMENTO DA IMAGEM INICIADO #######');
+            
+            //Carregando modelos 
+            const model_Unet = await tf.loadLayersModel(handler_Unet);
+            const model_V3 = await tf.loadLayersModel(handler_V3);
+            
+            //Passar a imagem para um tensor 3D
+            const imgTensor_Unet =tfn.node.decodeImage(new Uint8Array(results[0]),1);
+            const imgTensor_V3 =tfn.node.decodeImage(new Uint8Array(results[0]),3);
         
-        //Carregando modelos 
-        const model_Unet = await tf.loadLayersModel(handler_Unet);
-        const model_V3 = await tf.loadLayersModel(handler_V3);
-        
-        //Passar a imagem para um tensor 3D
-        const imgTensor_Unet =tfn.node.decodeImage(new Uint8Array(results[0]),1);
-        const imgTensor_V3 =tfn.node.decodeImage(new Uint8Array(results[0]),3);
+            //Reajuste na imagem para tamanho 512x512 e expansão para 4D
+            const imgResize_Unet = tf.image.resizeNearestNeighbor(imgTensor_Unet, [512,512],preserve_aspect_ratio=true).mean(2).toFloat().expandDims(0).expandDims(-1);
+            
+            const imgResize_V3 = tf.image.resizeNearestNeighbor(imgTensor_V3, [150,150],preserve_aspect_ratio=true).toFloat().expandDims();
+            const offset = tf.scalar(255.);
+            const imgNormalizada = imgResize_V3.sub(offset).div(offset);
     
-        //Reajuste na imagem para tamanho 512x512 e expansão para 4D
-        const imgResize_Unet = tf.image.resizeNearestNeighbor(imgTensor_Unet, [512,512],preserve_aspect_ratio=true).mean(2).toFloat().expandDims(0).expandDims(-1);
-        
-        const imgResize_V3 = tf.image.resizeNearestNeighbor(imgTensor_V3, [150,150],preserve_aspect_ratio=true).toFloat().expandDims();
-        const offset = tf.scalar(255.);
-        const imgNormalizada = imgResize_V3.sub(offset).div(offset);
-
-        //Colocando a imagem para o modelo e guardando as prediction 
-        let prediction_Unet = await model_Unet.predict(imgResize_Unet).dataSync();
-        prediction_Unet = Array.from(prediction_Unet)
-
-        let prediction_V3 = await model_V3.predict(imgNormalizada).dataSync();
-        prediction_v3 = Array.from(prediction_V3)
-
-        const object_result = new Array()
-        object_result.push(prediction_Unet)
-        object_result.push(imagem)
-        object_result.push(JSON.stringify(prediction_V3))
-        object_result.push(idteste)
-        object_result.push(image_mongo1)
-        object_result.push(image_mongo2)
-        
-        return object_result;
-
-    }).then((predictions)=>{
-        //Then significa que todas as funções deram certo 
-        console.log('#######  PROCESSAMENTO DA IMAGEM TERMINADO #######')
+            //Colocando a imagem para o modelo e guardando as prediction 
+            let prediction_Unet = await model_Unet.predict(imgResize_Unet).dataSync();
+            prediction_Unet = Array.from(prediction_Unet)
     
-        //Enviando as predictions para o script.py
-        const path_imagem = predictions[1]
-        try{
-            console.log('#######  DADOS ENVIADO PARA SCRIPT_PROCESSO.PY  #######')
-		    pyshell.send(JSON.stringify(predictions))
-        }catch(err){
-            console.log("#######  ERROR! AO ENVIO DOS DADOS PARA O SCRIPT_PROCESSO.PY #######", err)
-        }
-        //Verificações se chegou e se sim print na tela 'finished'
-        pyshell.on('message', function (message) {
-            console.log(message);
-        });
-
-        pyshell.end(function (err) {
-            if (err){
-                throw err;
-            };
-            if(fss.existsSync(path_imagem)){
-                fss.unlink(path_imagem, (err)=>{
-                    if(err){
-                        console.log("Error while delete file "+err);
-                    }
+            let prediction_V3 = await model_V3.predict(imgNormalizada).dataSync();
+            prediction_v3 = Array.from(prediction_V3)
+    
+            const object_result = new Array()
+            object_result.push(prediction_Unet)
+            object_result.push(imagem)
+            object_result.push(JSON.stringify(prediction_V3))
+            object_result.push(idteste)
+            object_result.push(image_mongo1)
+            object_result.push(image_mongo2)
+            
+            return object_result;
+    
+        }).then((predictions)=>{
+            //Then significa que todas as funções deram certo 
+            console.log('#######  PROCESSAMENTO DA IMAGEM TERMINADO #######')
+        
+            //Enviando as predictions para o script.py
+            const path_imagem = predictions[1]
+            try{
+                console.log('#######  DADOS ENVIADO PARA SCRIPT_PROCESSO.PY  #######')
+                pyshell.send(JSON.stringify(predictions))
+            }catch(err){
+                console.log("#######  ERROR! AO ENVIO DOS DADOS PARA O SCRIPT_PROCESSO.PY #######", err)
+            }
+            //Verificações se chegou e se sim print na tela 'finished'
+            pyshell.on('message', function (message) {
+                console.log(message);
+            });
+    
+            pyshell.end(function (err) {
+                if (err){
+                    throw err;
+                };
+                if(fss.existsSync(path_imagem)){
+                    fss.unlink(path_imagem, (err)=>{
+                        if(err){
+                            console.log("Error while delete file "+err);
+                        }
+                        
+                    })
+                }
+    
+                if(array_testes.length > 5 ){
+                    console.log('#######  LIMPEZA DO BD! INICIADO!" #######')
+                    array_testes.pop();
+                    Clean(array_testes);
+                    shell.exec('free -h')
+                    shell.exec('sync; echo 1 > /proc/sys/vm/drop_caches')
+                    shell.exec('sync; sysctl -w vm.drop_caches=1')
+                    shell.exec('sync; swapoff -a && swapon /swapfile')
+                    shell.exec('free -h')
+                    console.log('#######  LIMPEZA DO BD! FINALIZADO!" #######')
+                    console.log('#######  FINISHED! PROCESSAMENTO DA IMAGEM REALIZADO COM SUCESSO! #######');
+                    flag = "STOP"; //Bandeira para sinalizar que finalizou...
+                    const tempo_final = Date.now() - tempo_inicio
+                    pyshell = new PythonShell('script_processo.py');
+                    console.log('#######  TEMPO DO PROCESSO: ', tempo_final, '  ####### ')
+                }else{
+                    console.log('#######  FINISHED! PROCESSAMENTO DA IMAGEM REALIZADO COM SUCESSO! #######');
+                    flag = "STOP"; //Bandeira para sinalizar que finalizou...
+                    const tempo_final = Date.now() - tempo_inicio
+                    pyshell = new PythonShell('script_processo.py');
+                    console.log('#######  TEMPO DO PROCESSO: ', tempo_final, '  ####### ')
                     
-                })
-            }
-
-            if(array_testes.length > 5 ){
-                console.log('#######  LIMPEZA DO BD! INICIADO!" #######')
-                array_testes.pop();
-                Clean(array_testes);
-                shell.exec('free -h')
-                shell.exec('sync; echo 1 > /proc/sys/vm/drop_caches')
-                shell.exec('sync; sysctl -w vm.drop_caches=1')
-                shell.exec('sync; swapoff -a && swapon /swapfile')
-                shell.exec('free -h')
-                console.log('#######  LIMPEZA DO BD! FINALIZADO!" #######')
-                console.log('#######  FINISHED! PROCESSAMENTO DA IMAGEM REALIZADO COM SUCESSO! #######');
-                flag = "STOP"; //Bandeira para sinalizar que finalizou...
-                const tempo_final = Date.now() - tempo_inicio
-                pyshell = new PythonShell('script_processo.py');
-                console.log('#######  TEMPO DO PROCESSO: ', tempo_final, '  ####### ')
-            }else{
-                console.log('#######  FINISHED! PROCESSAMENTO DA IMAGEM REALIZADO COM SUCESSO! #######');
-                flag = "STOP"; //Bandeira para sinalizar que finalizou...
-                const tempo_final = Date.now() - tempo_inicio
-                pyshell = new PythonShell('script_processo.py');
-                console.log('#######  TEMPO DO PROCESSO: ', tempo_final, '  ####### ')
-                
-            }
-        });
-        
-        
-    }).catch((err)=>{
-        //Catch significa que alguma função não corresponderam de maneira correta
-        console.log(err)
-    })
+                }
+            });
+            
+            
+        }).catch((err)=>{
+            //Catch significa que alguma função não corresponderam de maneira correta
+            console.log(err)
+        })
+    }
+   
 }
 
 async function Clean (lista_teste){  
