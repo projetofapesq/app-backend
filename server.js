@@ -76,6 +76,7 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
         object_result.push(image_mongo1)
         object_result.push(image_mongo2)
         
+        
         return object_result;
 
     }).then((predictions)=>{
@@ -108,7 +109,7 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
                 })
             }
 
-            if(array_testes.length > 5 ){
+            if(array_testes.length > 10 ){
                 console.log('#######  LIMPEZA DO BD! INICIADO!" #######')
                 array_testes.pop();
                 Clean(array_testes);
@@ -123,12 +124,14 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
                 const tempo_final = Date.now() - tempo_inicio
                 pyshell = new PythonShell('script_processo.py');
                 console.log('#######  TEMPO DO PROCESSO: ', tempo_final, '  ####### ')
+                console.log('------------------------------------------------------------');
             }else{
                 console.log('#######  FINISHED! PROCESSAMENTO DA IMAGEM REALIZADO COM SUCESSO! #######');
                 flag = "STOP"; //Bandeira para sinalizar que finalizou...
                 const tempo_final = Date.now() - tempo_inicio
                 pyshell = new PythonShell('script_processo.py');
                 console.log('#######  TEMPO DO PROCESSO: ', tempo_final, '  ####### ')
+                console.log('------------------------------------------------------------');
                 
             }
         });
@@ -208,20 +211,30 @@ app.get('/imgheatmap/:id', (req, res)=>{
 
 
 app.post('/image', multer(multerConfig).single('file'), async (req, res)=>{
-    flag = "START"; //Bandeira iniciar
-    const image = req.file.path;//repassando o valor para uma variavel. Local: Path; Aws: Location
-    const array = image.split("/")
-    const array2 = array[5].split("-")//5
-    const image_mongo1 = array2[0]
-    const image_mongo2 = array2[1]
-    try{
-        const teste = await Teste.create({ "imagem":image_mongo1 })      
-        Processo(image,teste.id,image_mongo1,image_mongo2)//Chamando a função de processo
-        return res.send(teste)
-    }catch(err){0
+    
+    
+    if(flag==="START"){
+        console.log('------------------------------------------------------------');
+        console.log('#######  OUTRO PROCESSO EM ANDAMENTO! #######');
+        console.log('------------------------------------------------------------');
+    }else{
+        flag = "START"; //Bandeira iniciar
+        const image = req.file.path;//repassando o valor para uma variavel. Local: Path; Aws: Location
+        const array = image.split("/")
+        const array2 = array[5].split("-")//5
+        const image_mongo1 = array2[0]
+        const image_mongo2 = array2[1]
+        try{
+            const teste = await Teste.create({ "imagem":image_mongo1 })      
+            Processo(image,teste.id,image_mongo1,image_mongo2)//Chamando a função de processo
+            return res.send(teste)
+        }catch(err){0
+            
+            return res.status(400).send({error:"Failha no registro"});
+        }
+    }
+    
         
-        return res.status(400).send({error:"Failha no registro"});
-    }    
 })
 
 //Habilitando o servidor na porta 5000
