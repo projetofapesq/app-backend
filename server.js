@@ -110,21 +110,33 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
             }
 
             if(array_testes.length > 10 ){
-                console.log('#######  LIMPEZA DO BD! INICIADO!" #######')
-                array_testes.pop();
-                Clean(array_testes);
-                shell.exec('free -h')
-                shell.exec('sync; echo 1 > /proc/sys/vm/drop_caches')
-                shell.exec('sync; sysctl -w vm.drop_caches=1')
-                shell.exec('sync; swapoff -a && swapon /swapfile')
-                shell.exec('free -h')
-                console.log('#######  LIMPEZA DO BD! FINALIZADO!" #######')
-                console.log('#######  FINISHED! PROCESSAMENTO DA IMAGEM REALIZADO COM SUCESSO! #######');
-                flag = "STOP"; //Bandeira para sinalizar que finalizou...
-                const tempo_final = Date.now() - tempo_inicio
-                pyshell = new PythonShell('script_processo.py');
-                console.log('#######  TEMPO DO PROCESSO: ', tempo_final, '  ####### ')
-                console.log('------------------------------------------------------------');
+                
+                new Promise((resolve, reject)=>{
+                    console.log('#######  LIMPEZA DO BD! INICIADO!" #######')
+                    array_testes.pop();
+                    Clean(array_testes);
+                    shell.exec('free -h')
+                    shell.exec('sync; echo 1 > /proc/sys/vm/drop_caches')
+                    shell.exec('sync; sysctl -w vm.drop_caches=1')
+                    shell.exec('sync; swapoff -a && swapon -a')
+                    shell.exec('free -h')
+                    console.log('#######  LIMPEZA DO BD! FINALIZADO!" #######')
+                    console.log('#######  FINISHED! PROCESSAMENTO DA IMAGEM REALIZADO COM SUCESSO! #######');
+                    resolve();
+                }).then(()=>{
+                    flag = "STOP"; //Bandeira para sinalizar que finalizou...
+                    const tempo_final = Date.now() - tempo_inicio
+                    pyshell = new PythonShell('script_processo.py');
+                    console.log('#######  TEMPO DO PROCESSO: ', tempo_final, '  ####### ')
+                    console.log('------------------------------------------------------------');
+                }).catch(()=>{
+                    console.log('------------------------------------------------------------');
+                    console.log('#######  PROBLEMA COM A LIMPEZA! #######');
+                    console.log('------------------------------------------------------------');
+                })
+                
+                
+                
             }else{
                 console.log('#######  FINISHED! PROCESSAMENTO DA IMAGEM REALIZADO COM SUCESSO! #######');
                 flag = "STOP"; //Bandeira para sinalizar que finalizou...
