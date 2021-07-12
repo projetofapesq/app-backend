@@ -123,3 +123,18 @@ query_nova = { "id" : idteste, "predictions": predictions, "idimage":image_mongo
 collection.insert_one( query_nova );
 
 
+del model
+del lines
+del x
+del img 
+del idteste
+del predictions
+del image_mongo1 
+del image_mongo2
+del img_processed
+del heatmap 
+del img_heatmap 
+del x_mask
+del x_mask_ajust 
+del mask 
+del img_o 

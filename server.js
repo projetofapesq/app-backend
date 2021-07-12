@@ -132,11 +132,12 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
                 }).catch(()=>{
                     console.log('------------------------------------------------------------');
                     console.log('#######  PROBLEMA COM A LIMPEZA! #######');
+                    flag = "STOP"; //Bandeira para sinalizar que finalizou...
+                    const tempo_final = Date.now() - tempo_inicio
+                    pyshell = new PythonShell('script_processo.py');
+                    console.log('#######  TEMPO DO PROCESSO: ', tempo_final, '  ####### ')
                     console.log('------------------------------------------------------------');
                 })
-                
-                
-                
             }else{
                 console.log('#######  FINISHED! PROCESSAMENTO DA IMAGEM REALIZADO COM SUCESSO! #######');
                 flag = "STOP"; //Bandeira para sinalizar que finalizou...
