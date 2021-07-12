@@ -45,7 +45,7 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
     
     Promise.all([fs.readFile(imagem)]).then( async (results)=>{
         console.log('#######  PROCESSAMENTO DA IMAGEM INICIADO #######');
-        
+        shell.exec('free -h')
         //Carregando modelos 
         const model_Unet = await tf.loadLayersModel(handler_Unet);
         const model_V3 = await tf.loadLayersModel(handler_V3);
@@ -82,7 +82,7 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
     }).then((predictions)=>{
         //Then significa que todas as funções deram certo 
         console.log('#######  PROCESSAMENTO DA IMAGEM TERMINADO #######')
-    
+        shell.exec('free -h')
         //Enviando as predictions para o script.py
         const path_imagem = predictions[1]
         try{
@@ -113,6 +113,7 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
                 
                 new Promise((resolve, reject)=>{
                     console.log('#######  LIMPEZA DO BD! INICIADO!" #######')
+                    shell.exec('free -h')
                     array_testes.pop();
                     Clean(array_testes);
                     shell.exec('free -h')
@@ -140,6 +141,7 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
                 })
             }else{
                 console.log('#######  FINISHED! PROCESSAMENTO DA IMAGEM REALIZADO COM SUCESSO! #######');
+                shell.exec('free -h')
                 flag = "STOP"; //Bandeira para sinalizar que finalizou...
                 const tempo_final = Date.now() - tempo_inicio
                 pyshell = new PythonShell('script_processo.py');
