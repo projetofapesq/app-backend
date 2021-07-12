@@ -116,7 +116,7 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
                     shell.exec('free -h')
                     array_testes.pop();
                     Clean(array_testes);
-                    shell.exec('npm restart')
+                    shell.exec('npm stop --if-present && npm start')
                     
                     console.log('#######  LIMPEZA DO BD! FINALIZADO!" #######')
                     console.log('#######  FINISHED! PROCESSAMENTO DA IMAGEM REALIZADO COM SUCESSO! #######');
