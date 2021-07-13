@@ -33,7 +33,6 @@ const multerConfig = require("./config/multer");
 //Instanciamento de Array e PythonShell
 let pyshell = new PythonShell('script_processo.py'), flag = "EMPTY", pyclean;
 
-
 //Promessa para rodar o model.json com tensorflow
 async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
     //Capturar os testes já feito para limpar
@@ -45,7 +44,7 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
     
     Promise.all([fs.readFile(imagem)]).then( async (results)=>{
         console.log('#######  PROCESSAMENTO DA IMAGEM INICIADO #######');
-        shell.exec('free -h')
+        
         //Carregando modelos 
         const model_Unet = await tf.loadLayersModel(handler_Unet);
         const model_V3 = await tf.loadLayersModel(handler_V3);
@@ -82,7 +81,7 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
     }).then((predictions)=>{
         //Then significa que todas as funções deram certo 
         console.log('#######  PROCESSAMENTO DA IMAGEM TERMINADO #######')
-        shell.exec('free -h')
+        
         //Enviando as predictions para o script.py
         const path_imagem = predictions[1]
         try{
@@ -112,23 +111,19 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
             if(array_testes.length > 4 ){
                 
                 new Promise((resolve, reject)=>{
-                    console.log('#######  LIMPEZA DO BD! INICIADO!" #######')
-                    shell.exec('free -h')
+                    console.log('#######  HORA DA LIMPEZA INICIADO! #######')
                     array_testes.pop();
                     Clean(array_testes);
-                    shell.exec('free -h')
-                    shell.exec('sync; echo 1 > /proc/sys/vm/drop_caches')
-                    shell.exec('sync; sysctl -w vm.drop_caches=1')
-                    shell.exec('sync; swapoff -a && swapon -a')
-                    shell.exec('free -h')
-                    console.log('#######  LIMPEZA DO BD! FINALIZADO!" #######')
-                    console.log('#######  FINISHED! PROCESSAMENTO DA IMAGEM REALIZADO COM SUCESSO! #######');
-                    resolve();
-                }).then(()=>{
+                    console.log('#######  HORA DA LIMPEZA FINALIZADO! #######')
+                    console.log('#######  FINISHED! TODO PROCESSO REALIZADO COM SUCESSO! #######');
                     flag = "STOP"; //Bandeira para sinalizar que finalizou...
                     const tempo_final = Date.now() - tempo_inicio
                     pyshell = new PythonShell('script_processo.py');
                     console.log('#######  TEMPO DO PROCESSO: ', tempo_final, '  ####### ')
+                    console.log('------------------------------------------------------------');
+                    shell.exec('pm2 stop 3 && pm2 start 3')
+                    resolve();
+                }).then(()=>{
                     console.log('------------------------------------------------------------');
                 }).catch(()=>{
                     console.log('------------------------------------------------------------');
@@ -191,7 +186,7 @@ async function Clean (lista_teste){
         await Teste.remove({id:el.id})
         await Teste.remove({_id:el._id})
     })
-    console.log('#######  LIMPEZA DO BD E PASTAS SUCESSO! #######')
+    console.log('#######  LIMPEZA DO MONGO, PASTAS RESULTADOS E IMAGENS SUCESSO! #######')
 }
 
 //Rotas
