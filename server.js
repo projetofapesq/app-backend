@@ -131,7 +131,9 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
             console.log('----------->',restart)
             if(restart){
                 console.log('------------------------RESTART--------------------------');
-                shell.exec("pm2 restart diagnosis")
+                setTimeout(
+                    shell.exec("pm2 restart diagnosis")
+                ,10000)
             }
         });
       
