@@ -129,9 +129,8 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
                 
             }
         });
-        
-        return restart
-        
+
+
     }).catch((err)=>{
         //Catch significa que alguma função não corresponderam de maneira correta
         console.log(err)
@@ -222,7 +221,8 @@ app.post('/image', multer(multerConfig).single('file'), async (req, res)=>{
         const image_mongo2 = array2[1]
         try{
             const teste = await Teste.create({ "imagem":image_mongo1 })      
-            restart = Processo(image,teste.id,image_mongo1,image_mongo2)//Chamando a função de processo
+            Processo(image,teste.id,image_mongo1,image_mongo2)//Chamando a função de processo
+            console.log('----------->',restart)
             if(restart){
                 console.log('------------------------RESTART--------------------------');
                 shell.exec("pm2 restart diagnosis")
