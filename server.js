@@ -129,7 +129,11 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
                 
             }
         });
-
+        console.log('----------->',restart)
+        if(restart){
+            console.log('------------------------RESTART--------------------------');
+            shell.exec("pm2 restart diagnosis")
+        }
 
     }).catch((err)=>{
         //Catch significa que alguma função não corresponderam de maneira correta
@@ -222,11 +226,7 @@ app.post('/image', multer(multerConfig).single('file'), async (req, res)=>{
         try{
             const teste = await Teste.create({ "imagem":image_mongo1 })      
             Processo(image,teste.id,image_mongo1,image_mongo2)//Chamando a função de processo
-            console.log('----------->',restart)
-            if(restart){
-                console.log('------------------------RESTART--------------------------');
-                shell.exec("pm2 restart diagnosis")
-            }
+           
             return res.send(teste)
         }catch(err){
             return res.status(400).send({error:"Failha no registro"});
