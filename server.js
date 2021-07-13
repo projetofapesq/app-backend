@@ -104,7 +104,8 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
                     
                 })
             }
-
+            flag = "STOP"; //Bandeira para sinalizar que finalizou...
+            
             if(array_testes.length > 4 ){
                 
                 new Promise((resolve, reject)=>{
