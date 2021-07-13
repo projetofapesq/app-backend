@@ -38,9 +38,6 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
     //Capturar os testes já feito para limpar
     const array_testes = await Teste.find();
     const tempo_inicio = Date.now()
-    //Processo de limpar
-    process.stdout.clearLine();
-    process.stdout.cursorTo(0);
     
     Promise.all([fs.readFile(imagem)]).then( async (results)=>{
         console.log('#######  PROCESSAMENTO DA IMAGEM INICIADO #######');
