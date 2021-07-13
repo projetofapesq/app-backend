@@ -128,12 +128,13 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
                 console.log('------------------------------------------------------------');
                 
             }
+            console.log('----------->',restart)
+            if(restart){
+                console.log('------------------------RESTART--------------------------');
+                shell.exec("pm2 restart diagnosis")
+            }
         });
-        console.log('----------->',restart)
-        if(restart){
-            console.log('------------------------RESTART--------------------------');
-            shell.exec("pm2 restart diagnosis")
-        }
+      
 
     }).catch((err)=>{
         //Catch significa que alguma função não corresponderam de maneira correta
