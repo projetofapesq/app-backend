@@ -31,7 +31,7 @@ const multer = require('multer');
 const multerConfig = require("./config/multer");
 
 //Instanciamento de Array e PythonShell
-let pyshell = new PythonShell('script_processo.py'), flag = "EMPTY", pyclean;
+let pyshell = new PythonShell('script_processo.py'), flag = "EMPTY", restart=false;
 
 //Promessa para rodar o model.json com tensorflow
 async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
@@ -105,33 +105,19 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
                 })
             }
             flag = "STOP"; //Bandeira para sinalizar que finalizou...
-            
+
             if(array_testes.length > 4 ){
-                
-                new Promise((resolve, reject)=>{
-                    console.log('#######  HORA DA LIMPEZA INICIADO! #######')
-                    array_testes.pop();
-                    Clean(array_testes);
-                    console.log('#######  HORA DA LIMPEZA FINALIZADO! #######')
-                    console.log('#######  FINISHED! TODO PROCESSO REALIZADO COM SUCESSO! #######');
-                    flag = "STOP"; //Bandeira para sinalizar que finalizou...
-                    const tempo_final = Date.now() - tempo_inicio
-                    pyshell = new PythonShell('script_processo.py');
-                    console.log('#######  TEMPO DO PROCESSO: ', tempo_final, '  ####### ')
-                    console.log('------------------------------------------------------------');
-                    shell.exec('pm2 restart 3')
-                    resolve();
-                }).then(()=>{
-                    console.log('------------------------------------------------------------');
-                }).catch(()=>{
-                    console.log('------------------------------------------------------------');
-                    console.log('#######  PROBLEMA COM A LIMPEZA! #######');
-                    flag = "STOP"; //Bandeira para sinalizar que finalizou...
-                    const tempo_final = Date.now() - tempo_inicio
-                    pyshell = new PythonShell('script_processo.py');
-                    console.log('#######  TEMPO DO PROCESSO: ', tempo_final, '  ####### ')
-                    console.log('------------------------------------------------------------');
-                })
+                console.log('#######  HORA DA LIMPEZA INICIADO! #######')
+                array_testes.pop();
+                Clean(array_testes);
+                console.log('#######  HORA DA LIMPEZA FINALIZADO! #######')
+                console.log('#######  FINISHED! TODO PROCESSO REALIZADO COM SUCESSO! #######');
+                flag = "STOP"; //Bandeira para sinalizar que finalizou...
+                const tempo_final = Date.now() - tempo_inicio
+                pyshell = new PythonShell('script_processo.py');
+                console.log('#######  TEMPO DO PROCESSO: ', tempo_final, '  ####### ')
+                console.log('------------------------------------------------------------');
+                restart=true;
             }else{
                 console.log('#######  FINISHED! PROCESSAMENTO DA IMAGEM REALIZADO COM SUCESSO! #######');
                 shell.exec('free -h')
@@ -186,7 +172,6 @@ async function Clean (lista_teste){
     })
     console.log('#######  LIMPEZA DO MONGO, PASTAS RESULTADOS E IMAGENS SUCESSO! #######')
 }
-
 //Rotas
 app.get('/bandeira', (req, res) =>{
     res.send(flag)
@@ -219,7 +204,7 @@ app.get('/imgheatmap/:id', (req, res)=>{
 
 
 app.post('/image', multer(multerConfig).single('file'), async (req, res)=>{
-    
+    restart=false;
     
     if(flag==="START"){
         console.log('------------------------------------------------------------');
@@ -235,9 +220,12 @@ app.post('/image', multer(multerConfig).single('file'), async (req, res)=>{
         try{
             const teste = await Teste.create({ "imagem":image_mongo1 })      
             Processo(image,teste.id,image_mongo1,image_mongo2)//Chamando a função de processo
+            if(restart){
+                console.log('------------------------RESTART--------------------------');
+                shell.exec("pm2 restart diagnosis")
+            }
             return res.send(teste)
-        }catch(err){0
-            
+        }catch(err){
             return res.status(400).send({error:"Failha no registro"});
         }
     }
