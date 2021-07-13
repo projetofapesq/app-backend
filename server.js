@@ -130,13 +130,14 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
             }
         });
         
+        return restart
         
     }).catch((err)=>{
         //Catch significa que alguma função não corresponderam de maneira correta
         console.log(err)
     })
 
-    return restart
+    
 }
 
 async function Clean (lista_teste){  
