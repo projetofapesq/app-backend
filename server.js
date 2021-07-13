@@ -118,7 +118,7 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
                     pyshell = new PythonShell('script_processo.py');
                     console.log('#######  TEMPO DO PROCESSO: ', tempo_final, '  ####### ')
                     console.log('------------------------------------------------------------');
-                    shell.exec('pm2 stop 3 && pm2 start 3')
+                    shell.exec('pm2 restart 3')
                     resolve();
                 }).then(()=>{
                     console.log('------------------------------------------------------------');
