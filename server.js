@@ -104,11 +104,10 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
                     
                 })
             }
-            if(array_testes.length > 4 ){
-                console.log('#######  HORA DA LIMPEZA INICIADO! #######')
+            if(array_testes.length > 10 ){
+                console.log('#######  HORA DA LIMPEZA  #######')
                 array_testes.pop();
                 Clean(array_testes);
-                console.log('#######  HORA DA LIMPEZA FINALIZADO! #######')
                 console.log('#######  FINISHED! TODO PROCESSO REALIZADO COM SUCESSO! #######');
                 flag = "RESTART"; //Bandeira para sinalizar que finalizou...
                 const tempo_final = Date.now() - tempo_inicio
