@@ -53,7 +53,7 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
         //Reajuste na imagem para tamanho 512x512 e expansão para 4D
         const imgResize_Unet = tf.image.resizeNearestNeighbor(imgTensor_Unet, [512,512],preserve_aspect_ratio=true).mean(2).toFloat().expandDims(0).expandDims(-1);
         
-        const imgResize_V3 = tf.image.resizeNearestNeighbor(imgTensor_V3, [150,150],preserve_aspect_ratio=true).toFloat().expandDims();
+        const imgResize_V3 = tf.image.resizeNearestNeighbor(imgTensor_V3, [256,256],preserve_aspect_ratio=true).toFloat().expandDims();
         const offset = tf.scalar(255.);
         const imgNormalizada = imgResize_V3.sub(offset).div(offset);
 

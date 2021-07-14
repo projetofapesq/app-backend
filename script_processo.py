@@ -34,7 +34,7 @@ def add_colored_mask(image, mask_image):
 
 # heatmap functions
 
-def load_img_heat(img_ad,DIM = 150):
+def load_img_heat(img_ad,DIM = 256):
 
   ORIGINAL = img_ad
   img = image.load_img(ORIGINAL, target_size=(DIM, DIM))
@@ -47,7 +47,7 @@ def load_img_heat(img_ad,DIM = 150):
 def heatmap_generation(model,x):
 
   with tensorflow.GradientTape() as tape:
-    last_conv_layer = model.get_layer('conv2d_85')
+    last_conv_layer = model.get_layer('conv2d_92')
     iterate = tensorflow.keras.models.Model([model.inputs], [model.output, last_conv_layer.output])
     model_out, last_conv_layer = iterate(x)
     class_out = model_out[:, np.argmax(model_out[0])]
@@ -63,7 +63,7 @@ def add_colored_heatmap (heatmap,ORIGINAL):
   heatmap = np.maximum(heatmap, 0)
   #print(np.max(heatmap))
   heatmap /= np.max(heatmap)
-  heatmap = heatmap.reshape((3, 3))
+  heatmap = heatmap.reshape((6, 6))
 
   img = cv2.imread(ORIGINAL)
   INTENSITY = 0.3
@@ -77,7 +77,7 @@ def add_colored_heatmap (heatmap,ORIGINAL):
   return img
 
 
-model = tensorflow.keras.models.load_model("./model_v3.h5") 
+model = tensorflow.keras.models.load_model("./model_v7.h5") 
 
 #segmentation
 lines = sys.stdin.readlines()
