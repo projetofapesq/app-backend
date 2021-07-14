@@ -31,7 +31,7 @@ const multer = require('multer');
 const multerConfig = require("./config/multer");
 
 //Instanciamento de Array e PythonShell
-let pyshell = new PythonShell('script_processo.py'), flag = "EMPTY", restart=false;
+let pyshell = new PythonShell('script_processo.py'), flag = "EMPTY";
 
 //Promessa para rodar o model.json com tensorflow
 async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
@@ -104,20 +104,18 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
                     
                 })
             }
-            flag = "STOP"; //Bandeira para sinalizar que finalizou...
-
             if(array_testes.length > 4 ){
                 console.log('#######  HORA DA LIMPEZA INICIADO! #######')
                 array_testes.pop();
                 Clean(array_testes);
                 console.log('#######  HORA DA LIMPEZA FINALIZADO! #######')
                 console.log('#######  FINISHED! TODO PROCESSO REALIZADO COM SUCESSO! #######');
-                flag = "STOP"; //Bandeira para sinalizar que finalizou...
+                flag = "RESTART"; //Bandeira para sinalizar que finalizou...
                 const tempo_final = Date.now() - tempo_inicio
                 pyshell = new PythonShell('script_processo.py');
                 console.log('#######  TEMPO DO PROCESSO: ', tempo_final, '  ####### ')
                 console.log('------------------------------------------------------------');
-                restart=true;
+                
             }else{
                 console.log('#######  FINISHED! PROCESSAMENTO DA IMAGEM REALIZADO COM SUCESSO! #######');
                 shell.exec('free -h')
@@ -128,13 +126,7 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
                 console.log('------------------------------------------------------------');
                 
             }
-            console.log('----------->',restart)
-            if(restart){
-                console.log('------------------------RESTART--------------------------');
-                setTimeout(
-                    shell.exec("pm2 restart diagnosis")
-                ,10000)
-            }
+
         });
       
 
@@ -213,11 +205,14 @@ app.get('/imgheatmap/:id', (req, res)=>{
 
 
 app.post('/image', multer(multerConfig).single('file'), async (req, res)=>{
-    restart=false;
-    
+
     if(flag==="START"){
         console.log('------------------------------------------------------------');
-        console.log('#######  OUTRO PROCESSO EM ANDAMENTO! #######');
+        console.log('#######  CHEGOU MENSAGEM! MAS JA TÊM OUTRO PROCESSO EM ANDAMENTO! #######');
+        console.log('------------------------------------------------------------');
+    }else if(flag==="RESTART"){
+        console.log('------------------------------------------------------------');
+        console.log('#######  SISTEMA INOPERANTE! SE PREPARANDO PARA O RESTART! #######');
         console.log('------------------------------------------------------------');
     }else{
         flag = "START"; //Bandeira iniciar
@@ -229,7 +224,6 @@ app.post('/image', multer(multerConfig).single('file'), async (req, res)=>{
         try{
             const teste = await Teste.create({ "imagem":image_mongo1 })      
             Processo(image,teste.id,image_mongo1,image_mongo2)//Chamando a função de processo
-           
             return res.send(teste)
         }catch(err){
             return res.status(400).send({error:"Failha no registro"});
