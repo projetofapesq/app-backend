@@ -3,7 +3,7 @@ const tf = require("@tensorflow/tfjs"); //tfjs padrão
 const tfn = require("@tensorflow/tfjs-node");//tfjs especifica ao node
 const {PythonShell} = require('python-shell');//para ligar o python ao nodejs
 const handler_Unet = tfn.io.fileSystem("./unet/model.json");//carregando o modelo Unet
-const handler_V3 = tfn.io.fileSystem("./model_v3.json/model.json");//carregando o modelo Xception
+const handler_V7 = tfn.io.fileSystem("./tfjs_model/model.json");//carregando o modelo Xception
 const Teste = require('./database/model')//Carregando o model do BD
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -44,30 +44,30 @@ async function Processo (imagem, idteste, image_mongo1,image_mongo2) {
         
         //Carregando modelos 
         const model_Unet = await tf.loadLayersModel(handler_Unet);
-        const model_V3 = await tf.loadLayersModel(handler_V3);
+        const model_V7 = await tf.loadLayersModel(handler_V7);
         
         //Passar a imagem para um tensor 3D
         const imgTensor_Unet =tfn.node.decodeImage(new Uint8Array(results[0]),1);
-        const imgTensor_V3 =tfn.node.decodeImage(new Uint8Array(results[0]),3);
+        const imgTensor_V7 =tfn.node.decodeImage(new Uint8Array(results[0]),3);
     
         //Reajuste na imagem para tamanho 512x512 e expansão para 4D
         const imgResize_Unet = tf.image.resizeNearestNeighbor(imgTensor_Unet, [512,512],preserve_aspect_ratio=true).mean(2).toFloat().expandDims(0).expandDims(-1);
         
-        const imgResize_V3 = tf.image.resizeNearestNeighbor(imgTensor_V3, [256,256],preserve_aspect_ratio=true).toFloat().expandDims();
+        const imgResize_V7 = tf.image.resizeNearestNeighbor(imgTensor_V7, [256,256],preserve_aspect_ratio=true).toFloat().expandDims();
         const offset = tf.scalar(255.);
-        const imgNormalizada = imgResize_V3.sub(offset).div(offset);
+        const imgNormalizada = imgResize_V7.sub(offset).div(offset);
 
         //Colocando a imagem para o modelo e guardando as prediction 
         let prediction_Unet = await model_Unet.predict(imgResize_Unet).dataSync();
         prediction_Unet = Array.from(prediction_Unet)
 
-        let prediction_V3 = await model_V3.predict(imgNormalizada).dataSync();
-        prediction_v3 = Array.from(prediction_V3)
+        let prediction_V7 = await model_V7.predict(imgNormalizada).dataSync();
+        prediction_v7 = Array.from(prediction_V7)
 
         const object_result = new Array()
         object_result.push(prediction_Unet)
         object_result.push(imagem)
-        object_result.push(JSON.stringify(prediction_V3))
+        object_result.push(JSON.stringify(prediction_V7))
         object_result.push(idteste)
         object_result.push(image_mongo1)
         object_result.push(image_mongo2)
